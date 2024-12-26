@@ -6,8 +6,8 @@ from page2 import Page2
 class MainWindow(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.title("My Tkinter App")
-        self.geometry('800x600')
+        self.title("文件处理工具")
+        self.geometry('600x600')
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -19,7 +19,7 @@ class MainWindow(tk.Tk):
 
         self.pages = {}
 
-        for F, tab_name in [(Page1, "Page 1"), (Page2, "Page 2")]:
+        for F, tab_name in [(Page1, "自动分类"), (Page2, "Page 2")]:
             page_name = F.__name__
             frame = F(parent=self.notebook, controller=self)
             self.pages[page_name] = frame
