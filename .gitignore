@@ -4,3 +4,6 @@
 *.iml
 *.ipr
 *.pyc
+*.spec
+/build/
+/dist/
