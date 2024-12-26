@@ -20,6 +20,14 @@ class Page1(tk.Frame):
         self.text_edit = tk.Text(self, wrap='word', height=10, width=50)
         self.text_edit.pack(pady=10)
 
+        # 添加文件类型限制的输入框
+        self.types_label = ttk.Label(self, text="Enter allowed file types (comma separated, e.g., .mp4,.jpg):")
+        self.types_label.pack(pady=(10, 5))
+
+        self.types_edit = tk.Entry(self, width=50 )
+        self.types_edit.pack(pady=5)
+        self.load_types()
+
         # 加载上次保存的文本
         self.load_text()
 
@@ -68,6 +76,21 @@ class Page1(tk.Frame):
         with open('saved_text.json', 'w') as f:
             json.dump({'text': text_content}, f)
 
+    def load_types(self):
+        """加载之前保存的文件类型"""
+        try:
+            with open('saved_types.json', 'r') as f:
+                data = json.load(f)
+                self.types_edit.insert(0, data.get('types', ''))
+        except FileNotFoundError:
+            pass
+
+    def save_types(self):
+        """保存当前文件类型到文件"""
+        types_content = self.types_edit.get().strip()
+        with open('saved_types.json', 'w') as f:
+            json.dump({'types': types_content}, f)
+
     def select_folder(self):
         """打开源文件夹选择对话框"""
         self.selected_folder = filedialog.askdirectory()
@@ -113,6 +136,12 @@ class Page1(tk.Frame):
             messagebox.showwarning("Warning", "Please select an output folder first.")
             return
 
+        # 获取允许的文件类型列表
+        allowed_types = [ext.strip().lower() for ext in self.types_edit.get().split(',')]
+        if not any(allowed_types):
+            messagebox.showwarning("Warning", "Please enter at least one allowed file type.")
+            return
+
         keywords = self.text_edit.get("1.0", tk.END).strip().splitlines()
         for keyword in keywords:
             keyword = keyword.strip()
@@ -122,12 +151,31 @@ class Page1(tk.Frame):
 
         for root, dirs, files in os.walk(self.selected_folder):
             for file in files:
-                for keyword in keywords:
-                    keyword = keyword.strip()
-                    if keyword and keyword.lower() in file.lower():
-                        dest_dir = os.path.join(self.output_folder, keyword)
-                        shutil.move(os.path.join(root, file), dest_dir)
-                        break
+                # 检查文件扩展名是否在允许的列表中
+                _, ext = os.path.splitext(file)
+                if ext.lower() in allowed_types:
+                    for keyword in keywords:
+                        keyword = keyword.strip()
+                        if keyword and keyword.lower() in file.lower():
+                            dest_dir = os.path.join(self.output_folder, keyword)
+                            shutil.move(os.path.join(root, file), dest_dir)
+                            break
 
         self.save_text()
+        self.save_types()
         messagebox.showinfo("Classification Complete", "Files have been classified.")
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("File Classifier")
+
+    mainframe = ttk.Frame(root, padding="3 3 12 12")
+    mainframe.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+    root.columnconfigure(0, weight=1)
+    root.rowconfigure(0, weight=1)
+
+    page1 = Page1(mainframe, root)
+    page1.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+
+    root.mainloop()

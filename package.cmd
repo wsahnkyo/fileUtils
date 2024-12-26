@@ -1,1 +1,1 @@
-pyinstaller --onefile --windowed --name=fileUtils main.py
+pyinstaller --windowed --name=fileUtils main.py

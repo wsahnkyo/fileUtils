@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-from page1 import Page1
-from page2 import Page2
+from .page1 import Page1
+from .page2 import Page2
 
 class MainWindow(tk.Tk):
     def __init__(self, *args, **kwargs):
